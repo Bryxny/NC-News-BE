@@ -65,10 +65,6 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
       return db.query(insertArticles);
     })
     .then((result) => {
-      console.log(result);
-      return result;
-    })
-    .then((result) => {
       const articleRef = createRef(result.rows);
       const commentsValues = commentData.map((comment) => {
         const formattedvalues = convertTimestampToDate(comment);
@@ -85,9 +81,6 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         commentsValues
       );
       return db.query(insertComments);
-    })
-    .then((result) => {
-      console.log(result);
     });
 };
 module.exports = seed;
