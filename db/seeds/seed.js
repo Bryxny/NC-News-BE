@@ -1,6 +1,6 @@
 const db = require("../connection");
 const format = require("pg-format");
-const { convertTimestampToDate } = require("./utils");
+const { convertTimestampToDate, createRef } = require("./utils");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db
@@ -59,27 +59,35 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
         ];
       });
       const insertArticles = format(
-        "INSERT INTO articles(title, topic, author, body, created_at, votes, article_img_url) VALUES %L",
+        "INSERT INTO articles(title, topic, author, body, created_at, votes, article_img_url) VALUES %L RETURNING *",
         articleValues
       );
       return db.query(insertArticles);
     })
-    .then(() => {
+    .then((result) => {
+      console.log(result);
+      return result;
+    })
+    .then((result) => {
+      const articleRef = createRef(result.rows);
       const commentsValues = commentData.map((comment) => {
         const formattedvalues = convertTimestampToDate(comment);
         return [
           formattedvalues.body,
-          formattedvalues.article_id,
+          articleRef[comment.article_title],
           formattedvalues.author,
           formattedvalues.votes,
           formattedvalues.created_at,
         ];
       });
       const insertComments = format(
-        "INSERT INTO comments(body, article_id, author, votes, created_at) VALUES %L",
+        "INSERT INTO comments(body, article_id, author, votes, created_at) VALUES %L RETURNING *",
         commentsValues
       );
       return db.query(insertComments);
+    })
+    .then((result) => {
+      console.log(result);
     });
 };
 module.exports = seed;
