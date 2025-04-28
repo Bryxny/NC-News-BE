@@ -23,3 +23,32 @@ describe("GET /api", () => {
       });
   });
 });
+
+describe("GET /api/invalidURL", () => {
+  test("404: Not - found when given an invalid url", () => {
+    return request(app)
+      .get("/api/invalidURL")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not Found");
+      });
+  });
+});
+
+describe("GET /api/topics", () => {
+  test("200: Responds with an array of topics objects", () => {
+    return request(app)
+      .get("/api/topics")
+      .expect(200)
+      .then(({ body }) => {
+        const topics = body.topics;
+        expect(Array.isArray(topics)).toBe(true);
+        expect(topics.length).toBe(3);
+        expect(topics).toEqual(data.topicData);
+        topics.forEach((topic) => {
+          expect(topic.hasOwnProperty("slug")).toBe(true);
+          expect(topic.hasOwnProperty("description")).toBe(true);
+        });
+      });
+  });
+});
