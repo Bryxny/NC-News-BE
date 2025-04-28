@@ -1,6 +1,10 @@
 const {} = require("./app.models");
 const fs = require("fs").promises;
-const { selectTopics, selectArticleById } = require("./app.models");
+const {
+  selectTopics,
+  selectArticleById,
+  selectArticles,
+} = require("./app.models");
 
 exports.getApi = (req, res, next) => {
   fs.readFile("./endpoints.json", "utf-8")
@@ -26,6 +30,17 @@ exports.getArticleById = (req, res, next) => {
   selectArticleById(article_id)
     .then((article) => {
       res.status(200).send({ article });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getArticles = (req, res, next) => {
+  selectArticles()
+    .then((articles) => {
+      console.log(articles);
+      res.status(200).send({ articles });
     })
     .catch((err) => {
       next(err);
