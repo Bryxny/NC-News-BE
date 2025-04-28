@@ -52,3 +52,39 @@ describe("GET /api/topics", () => {
       });
   });
 });
+
+describe("GET /api/articles/:article_id", () => {
+  test("200: Responds with article associated with requested article ID", () => {
+    return request(app)
+      .get("/api/articles/2")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          author: expect.any(String),
+          title: expect.any(String),
+          article_id: 2,
+          body: expect.any(String),
+          topic: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+  test("400: Responds with bad request when given invalid path", () => {
+    return request(app)
+      .get("/api/articles/notANumber")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+  test("404: Responds with custom message when given a number not in database", () => {
+    return request(app)
+      .get("/api/articles/999999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("No articles with an ID of 999999");
+      });
+  });
+});
