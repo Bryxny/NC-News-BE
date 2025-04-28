@@ -4,6 +4,7 @@ const {
   selectTopics,
   selectArticleById,
   selectArticles,
+  selectCommentsByArticleId,
 } = require("./app.models");
 
 exports.getApi = (req, res, next) => {
@@ -39,8 +40,21 @@ exports.getArticleById = (req, res, next) => {
 exports.getArticles = (req, res, next) => {
   selectArticles()
     .then((articles) => {
-      console.log(articles);
       res.status(200).send({ articles });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getCommentsByArticleId = (req, res, next) => {
+  const { article_id } = req.params;
+  selectArticleById(article_id)
+    .then(() => {
+      return selectCommentsByArticleId(article_id);
+    })
+    .then((comments) => {
+      res.status(200).send({ comments });
     })
     .catch((err) => {
       next(err);
