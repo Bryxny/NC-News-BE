@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { articleData } = require("../db/data/test-data");
 const { response } = require("./app");
 
 exports.selectTopics = () => {
@@ -50,6 +51,17 @@ exports.insertComment = (article_id, username, body) => {
     .query(
       "INSERT INTO comments (author, body, article_id) VALUES ($1, $2, $3) RETURNING *",
       [username, body, article_id]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
+exports.updateArticle = (article_id, inc_votes) => {
+  return db
+    .query(
+      "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *",
+      [inc_votes, article_id]
     )
     .then(({ rows }) => {
       return rows[0];
