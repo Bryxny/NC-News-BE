@@ -5,6 +5,7 @@ const {
   selectArticleById,
   selectArticles,
   selectCommentsByArticleId,
+  insertComment,
 } = require("./app.models");
 
 exports.getApi = (req, res, next) => {
@@ -51,4 +52,27 @@ exports.getCommentsByArticleId = (req, res, next) => {
       res.status(200).send({ comments });
     })
     .catch(next);
+};
+
+exports.postComment = (req, res, next) => {
+  const { article_id } = req.params;
+  const { username, body } = req.body;
+
+  if (!username || !body) {
+    return next({ status: 400, msg: "Missing required fields" });
+  }
+
+  selectArticleById(article_id)
+    .then(() => {
+      return insertComment(article_id, username, body);
+    })
+    .then((comment) => {
+      res.status(201).send({ comment });
+    })
+    .catch((err) => {
+      if (err.code === "23503") {
+        next({ status: 404, msg: "User not found" });
+      }
+      next(err);
+    });
 };
