@@ -167,3 +167,65 @@ describe("GET /api/articles/:article:id/comments", () => {
       });
   });
 });
+
+describe("POST /api/articles/:article:id/comments", () => {
+  test("201: posts a comment and responods with comment object", () => {
+    const comment = {
+      username: "lurker",
+      body: "This is a comment",
+    };
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send(comment)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment).toMatchObject({
+          comment_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          author: "lurker",
+          body: "This is a comment",
+          article_id: 3,
+        });
+      });
+  });
+  test("404: responds with message if author isn't a valid user", () => {
+    const comment = {
+      username: "bryxny",
+      body: "This is a comment",
+    };
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send(comment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("User not found");
+      });
+  });
+  test("404: responds with message if article doesn't exist", () => {
+    const comment = {
+      username: "lurker",
+      body: "This is a comment",
+    };
+    return request(app)
+      .post("/api/articles/9999/comments")
+      .send(comment)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("No articles with an ID of 9999");
+      });
+  });
+  test("400: responds with bad request if missing fields", () => {
+    const comment = {
+      username: "",
+      body: "",
+    };
+    return request(app)
+      .post("/api/articles/4/comments")
+      .send(comment)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Missing required fields");
+      });
+  });
+});
