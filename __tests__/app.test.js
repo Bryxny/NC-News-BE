@@ -229,3 +229,65 @@ describe("POST /api/articles/:article:id/comments", () => {
       });
   });
 });
+describe("PATCH /api/articles/:article_id", () => {
+  test("201: updates article at given ID and returns it", () => {
+    const incVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/articles/3")
+      .send(incVotes)
+      .expect(201)
+      .then(({ body }) => {
+        const expectedVotes = data.articleData[2].votes + 1;
+        expect(body.article).toMatchObject({
+          author: expect.any(String),
+          title: expect.any(String),
+          article_id: 3,
+          body: expect.any(String),
+          topic: expect.any(String),
+          created_at: expect.any(String),
+          votes: expectedVotes,
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+  test("201: updates article at given ID and returns it", () => {
+    const incVotes = { inc_votes: -100 };
+    return request(app)
+      .patch("/api/articles/2")
+      .send(incVotes)
+      .expect(201)
+      .then(({ body }) => {
+        const expectedVotes = data.articleData[1].votes - 100;
+        expect(body.article).toMatchObject({
+          author: expect.any(String),
+          title: expect.any(String),
+          article_id: 2,
+          body: expect.any(String),
+          topic: expect.any(String),
+          created_at: expect.any(String),
+          votes: expectedVotes,
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+  test("404: responds with custom message if article doesn't exist", () => {
+    const incVotes = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/articles/99999")
+      .send(incVotes)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("No articles with an ID of 99999");
+      });
+  });
+  test("400: responds with bad request if given invalid data", () => {
+    const incVotes = { inc_votes: "notANumber" };
+    return request(app)
+      .patch("/api/articles/3")
+      .send(incVotes)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
