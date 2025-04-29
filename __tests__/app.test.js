@@ -96,8 +96,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then(({ body }) => {
         expect(body.articles.length).toEqual(data.articleData.length);
-        const dates = body.articles.map((article) => article.created_at);
-        expect(dates).toBeSorted({ descending: true });
+        expect(body.articles).toBeSortedBy("created_at", { descending: true });
         body.articles.forEach((article) => {
           expect(article).toMatchObject({
             author: expect.any(String),
@@ -120,11 +119,9 @@ describe("GET /api/articles/:article:id/comments", () => {
       .get("/api/articles/3/comments")
       .expect(200)
       .then(({ body }) => {
-        console.log(body);
         expect(Array.isArray(body.comments)).toBe(true);
         expect(body.comments.length).toBe(2);
-        const dates = body.comments.map((comment) => comment.created_at);
-        expect(dates).toBeSorted({ descending: true });
+        expect(body.comments).toBeSortedBy("created_at", { descending: true });
         body.comments.forEach((comment) => {
           expect(comment).toMatchObject({
             comment_id: expect.any(Number),

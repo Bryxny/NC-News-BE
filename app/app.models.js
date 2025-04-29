@@ -2,45 +2,35 @@ const db = require("../db/connection");
 const { response } = require("./app");
 
 exports.selectTopics = () => {
-  return db.query(`SELECT * FROM topics`).then((result) => {
-    return result.rows;
+  return db.query(`SELECT * FROM topics`).then(({ rows }) => {
+    return rows;
   });
 };
 
 exports.selectArticleById = (article_id) => {
   return db
     .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
-    .then((result) => {
-      if (!result.rows[0]) {
+    .then(({ rows }) => {
+      if (!rows[0]) {
         return Promise.reject({
           status: 404,
           msg: `No articles with an ID of ${article_id}`,
         });
       }
-      return result.rows[0];
+      return rows[0];
     });
 };
 
 exports.selectArticles = () => {
   return db
-    .query(`SELECT * FROM articles ORDER BY created_at DESC`)
+    .query(
+      `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,COUNT(comments.comment_id) AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id GROUP BY articles.article_id ORDER BY articles.created_at DESC`
+    )
     .then(({ rows }) => {
-      const addCommentCount = rows.map((article) => {
-        return countComments(article.article_id).then((count) => {
-          article.comment_count = count;
-          delete article.body;
-          return article;
-        });
-      });
-      return Promise.all(addCommentCount);
-    });
-};
-
-const countComments = (article_id) => {
-  return db
-    .query("SELECT * FROM comments WHERE article_id = $1", [article_id])
-    .then((result) => {
-      return result.rows.length;
+      return rows.map((row) => ({
+        ...row,
+        comment_count: Number(row.comment_count),
+      }));
     });
 };
 
@@ -50,7 +40,7 @@ exports.selectCommentsByArticleId = (article_id) => {
       `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC;`,
       [article_id]
     )
-    .then((result) => {
-      return result.rows;
+    .then(({ rows }) => {
+      return rows;
     });
 };

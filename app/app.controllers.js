@@ -13,7 +13,7 @@ exports.getApi = (req, res, next) => {
       const endpoints = JSON.parse(data);
       res.status(200).send({ endpoints });
     })
-    .catch((err) => next(err));
+    .catch(next);
 };
 
 exports.getTopics = (req, res, next) => {
@@ -21,9 +21,7 @@ exports.getTopics = (req, res, next) => {
     .then((topics) => {
       res.status(200).send({ topics });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
 
 exports.getArticleById = (req, res, next) => {
@@ -32,9 +30,7 @@ exports.getArticleById = (req, res, next) => {
     .then((article) => {
       res.status(200).send({ article });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
 
 exports.getArticles = (req, res, next) => {
@@ -42,9 +38,7 @@ exports.getArticles = (req, res, next) => {
     .then((articles) => {
       res.status(200).send({ articles });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
 
 exports.getCommentsByArticleId = (req, res, next) => {
@@ -56,7 +50,5 @@ exports.getCommentsByArticleId = (req, res, next) => {
     .then((comments) => {
       res.status(200).send({ comments });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
