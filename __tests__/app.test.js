@@ -290,6 +290,16 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(body.msg).toBe("Bad Request");
       });
   });
+  test("400: responds with an error if given empty object", () => {
+    const incVotes = {};
+    return request(app)
+      .patch("/api/articles/3")
+      .send(incVotes)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Missing required field");
+      });
+  });
 });
 
 describe("DELETE /api/comments/:comment_id", () => {

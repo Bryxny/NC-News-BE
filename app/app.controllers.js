@@ -83,7 +83,9 @@ exports.postComment = (req, res, next) => {
 exports.patchArticle = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
-
+  if (!inc_votes) {
+    return next({ status: 400, msg: "Missing required field" });
+  }
   selectArticleById(article_id)
     .then(() => {
       return updateArticle(article_id, inc_votes);
