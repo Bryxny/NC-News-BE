@@ -11,6 +11,7 @@ const {
   postComment,
   patchArticle,
   deleteCommentById,
+  getUsers,
 } = require("./app.controllers");
 const { badRequest, customError } = require("./app.errors");
 
@@ -22,6 +23,7 @@ app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 app.post("/api/articles/:article_id/comments", postComment);
 app.patch("/api/articles/:article_id", patchArticle);
 app.delete("/api/comments/:comment_id", deleteCommentById);
+app.get("/api/users", getUsers);
 app.all("/*splat", (req, res) => {
   res.status(404).send({ msg: "Not Found" });
 });
