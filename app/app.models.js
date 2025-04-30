@@ -1,6 +1,4 @@
 const db = require("../db/connection");
-const { articleData } = require("../db/data/test-data");
-const { response } = require("./app");
 
 exports.selectTopics = () => {
   return db.query(`SELECT * FROM topics`).then(({ rows }) => {
@@ -22,17 +20,31 @@ exports.selectArticleById = (article_id) => {
     });
 };
 
-exports.selectArticles = () => {
-  return db
-    .query(
-      `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,COUNT(comments.comment_id) AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id GROUP BY articles.article_id ORDER BY articles.created_at DESC`
-    )
-    .then(({ rows }) => {
-      return rows.map((row) => ({
-        ...row,
-        comment_count: Number(row.comment_count),
-      }));
-    });
+exports.selectArticles = (sort_by = "created_at", order_by = "DESC") => {
+  const sortGreenList = [
+    "author",
+    "title",
+    "article_id",
+    "topic",
+    "created_at",
+    "votes",
+    "article_img_url",
+    "comment_count",
+  ];
+  const orderGreenList = ["ASC", "DESC"];
+  if (!sortGreenList.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Invalid Column" });
+  }
+  if (!orderGreenList.includes(order_by.toUpperCase())) {
+    return Promise.reject({ status: 400, msg: "Invalid Order" });
+  }
+  let queryStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,COUNT(comments.comment_id) AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id GROUP BY articles.article_id ORDER BY ${sort_by} ${order_by}`;
+  return db.query(queryStr).then(({ rows }) => {
+    return rows.map((row) => ({
+      ...row,
+      comment_count: Number(row.comment_count),
+    }));
+  });
 };
 
 exports.selectCommentsByArticleId = (article_id) => {

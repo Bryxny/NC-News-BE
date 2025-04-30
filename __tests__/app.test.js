@@ -342,3 +342,48 @@ describe("GET /api/users", () => {
       });
   });
 });
+
+describe("GET /api/articles (sorting queries)", () => {
+  test("200: Responds with array of articles sorted by created_at and desc by default ", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("created_at", {
+          descending: "false",
+        });
+      });
+  });
+  test("200: Responds with articles sorted by specified column", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("votes", { descending: "true" });
+      });
+  });
+  test("200: Responds with articles sorted by specified column", () => {
+    return request(app)
+      .get("/api/articles?sort_by=article_id&order_by=asc")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toBeSortedBy("article_id", { ascending: "true" });
+      });
+  });
+  test("400: responds with bad request when given invalid value", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votez")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Column");
+      });
+  });
+  test("400: responds with bad request when given invalid value", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order_by=up")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid Order");
+      });
+  });
+});

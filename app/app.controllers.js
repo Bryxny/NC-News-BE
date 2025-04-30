@@ -1,4 +1,3 @@
-const {} = require("./app.models");
 const fs = require("fs").promises;
 const {
   selectTopics,
@@ -38,7 +37,9 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  selectArticles()
+  const { sort_by } = req.query;
+  const { order_by } = req.query;
+  selectArticles(sort_by, order_by)
     .then((articles) => {
       res.status(200).send({ articles });
     })
