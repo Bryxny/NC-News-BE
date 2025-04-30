@@ -217,7 +217,6 @@ describe("POST /api/articles/:article:id/comments", () => {
   });
   test("400: responds with bad request if missing fields", () => {
     const comment = {
-      username: "",
       body: "",
     };
     return request(app)
@@ -229,6 +228,7 @@ describe("POST /api/articles/:article:id/comments", () => {
       });
   });
 });
+
 describe("PATCH /api/articles/:article_id", () => {
   test("201: updates article at given ID and returns it", () => {
     const incVotes = { inc_votes: 1 };
@@ -285,6 +285,29 @@ describe("PATCH /api/articles/:article_id", () => {
     return request(app)
       .patch("/api/articles/3")
       .send(incVotes)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
+});
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: Responds with no content at given id", () => {
+    return request(app)
+      .delete("/api/comments/3")
+      .expect(204)
+      .then((response) => {
+        expect(response.noContent).toBe(true);
+        return db.query("SELECT * FROM comments WHERE comment_id = 3");
+      })
+      .then(({ rows }) => {
+        expect(rows).toEqual([]);
+      });
+  });
+  test("400: Responds with bad request if given invalid data", () => {
+    return request(app)
+      .delete("/api/comments/notANumber")
       .expect(400)
       .then(({ body }) => {
         expect(body.msg).toBe("Bad Request");
