@@ -7,6 +7,7 @@ const {
   selectCommentsByArticleId,
   insertComment,
   updateArticle,
+  removeCommentById,
 } = require("./app.models");
 
 exports.getApi = (req, res, next) => {
@@ -88,6 +89,15 @@ exports.patchArticle = (req, res, next) => {
     })
     .then((article) => {
       res.status(201).send({ article });
+    })
+    .catch(next);
+};
+
+exports.deleteCommentById = (req, res, next) => {
+  const { comment_id } = req.params;
+  removeCommentById(comment_id)
+    .then(() => {
+      res.status(204).send();
     })
     .catch(next);
 };
