@@ -419,3 +419,14 @@ describe("GET /api/articles (topic query)", () => {
       });
   });
 });
+
+describe("GET /api/articles?queries", () => {
+  test("400: responds with bad request if given an invalid query paramters", () => {
+    return request(app)
+      .get("/api/articles?filter_by=topic")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid query parameter");
+      });
+  });
+});

@@ -38,6 +38,13 @@ exports.getArticleById = (req, res, next) => {
 
 exports.getArticles = (req, res, next) => {
   const { sort_by, order_by, topic } = req.query;
+  const validParams = ["sort_by", "order_by", "topic"];
+  const invalidParams = Object.keys(req.query).filter(
+    (key) => !validParams.includes(key)
+  );
+  if (invalidParams.length > 0)
+    next({ status: 400, msg: "Invalid query parameter" });
+
   selectArticles(sort_by, order_by, topic)
     .then((articles) => {
       res.status(200).send({ articles });
