@@ -5,6 +5,6 @@ app.listen(PORT, (err) => {
   if (err) {
     console.log("Can't connect to port");
   } else {
-    console.log(`Server is listening on port ${port}`);
+    console.log(`Server is listening on port ${PORT}`);
   }
 });
