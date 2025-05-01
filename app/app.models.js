@@ -8,7 +8,10 @@ exports.selectTopics = () => {
 
 exports.selectArticleById = (article_id) => {
   return db
-    .query(`SELECT * FROM articles WHERE article_id = $1`, [article_id])
+    .query(
+      `SELECT articles.*, COUNT(comments.comment_id):: INT AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id`,
+      [article_id]
+    )
     .then(({ rows }) => {
       if (!rows[0]) {
         return Promise.reject({
@@ -38,7 +41,7 @@ exports.selectArticles = (sort_by = "created_at", order_by = "DESC", topic) => {
   if (!orderGreenList.includes(order_by.toUpperCase())) {
     return Promise.reject({ status: 400, msg: "Invalid Order" });
   }
-  let queryStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,COUNT(comments.comment_id) AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id`;
+  let queryStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id`;
   const queryValues = [];
 
   if (topic) {
@@ -54,10 +57,7 @@ exports.selectArticles = (sort_by = "created_at", order_by = "DESC", topic) => {
         msg: `No articles with a topic of ${topic}`,
       });
     }
-    return rows.map((row) => ({
-      ...row,
-      comment_count: Number(row.comment_count),
-    }));
+    return rows;
   });
 };
 
