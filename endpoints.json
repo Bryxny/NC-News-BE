@@ -11,17 +11,19 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles",
-    "queries": ["sort_by", "order"],
-    "example_request": "/api/articles?sort_by=created_at&order=ASC",
+    "queries": ["sort_by", "order", "topics"],
+    "example_request": "/api/articles?sort_by=created_at&order=ASC&topic=cats",
     "exampleResponse": {
       "articles": [
         {
-          "title": "Seafood substitutions are increasing",
-          "topic": "cooking",
-          "author": "weegembump",
-          "created_at": "2018-05-30T15:59:13.341Z",
+          "author": "rogersop",
+          "title": "UNCOVERED: catspiracy to bring down democracy",
+          "article_id": 5,
+          "topic": "cats",
+          "created_at": "2020-08-03T13:14:00.000Z",
           "votes": 0,
-          "comment_count": 6
+          "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          "comment_count": 2
         }
       ]
     }
