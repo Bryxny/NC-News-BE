@@ -53,29 +53,6 @@ describe("GET /api/topics", () => {
   });
 });
 
-describe("DELETE /api/comments/:comment_id", () => {
-  test("204: Responds with no content at given id", () => {
-    return request(app)
-      .delete("/api/comments/3")
-      .expect(204)
-      .then((response) => {
-        expect(response.noContent).toBe(true);
-        return db.query("SELECT * FROM comments WHERE comment_id = 3");
-      })
-      .then(({ rows }) => {
-        expect(rows).toEqual([]);
-      });
-  });
-  test("400: Responds with bad request if given invalid data", () => {
-    return request(app)
-      .delete("/api/comments/notANumber")
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Bad Request");
-      });
-  });
-});
-
 describe("ARTICLES", () => {
   describe("GET /api/articles/:article_id", () => {
     test("200: Responds with article associated with requested article ID", () => {
@@ -459,6 +436,87 @@ describe("USERS", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("User not found");
+      });
+  });
+});
+
+describe("COMMENTS", () => {
+  describe("DELETE /api/comments/:comment_id", () => {
+    test("204: Responds with no content at given id", () => {
+      return request(app)
+        .delete("/api/comments/3")
+        .expect(204)
+        .then((response) => {
+          expect(response.noContent).toBe(true);
+          return db.query("SELECT * FROM comments WHERE comment_id = 3");
+        })
+        .then(({ rows }) => {
+          expect(rows).toEqual([]);
+        });
+    });
+    test("400: Responds with bad request if given invalid data", () => {
+      return request(app)
+        .delete("/api/comments/notANumber")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+  });
+  describe("PATCH /api/comments/:comment_id", () => {
+    test("200: Responds with updated comment object", () => {
+      const votes = { inc_votes: 10 };
+      return request(app)
+        .patch("/api/comments/3")
+        .send(votes)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment).toMatchObject({
+            comment_id: 3,
+            article_id: 1,
+            body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+            votes: 110,
+            author: "icellusedkars",
+            created_at: "2020-03-01T01:13:00.000Z",
+          });
+        });
+    });
+    test("200: Responds with updated comment object", () => {
+      const votes = { inc_votes: -110 };
+      return request(app)
+        .patch("/api/comments/3")
+        .send(votes)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment).toMatchObject({
+            comment_id: 3,
+            article_id: 1,
+            body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+            votes: -10,
+            author: "icellusedkars",
+            created_at: "2020-03-01T01:13:00.000Z",
+          });
+        });
+    });
+  });
+  test("404: Responds with not found if comment doesnt exist", () => {
+    const votes = { inc_votes: -110 };
+    return request(app)
+      .patch("/api/comments/9999")
+      .send(votes)
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("No comment with an ID of 9999");
+      });
+  });
+  test("400: Responds with bad request if given an empty object", () => {
+    const votes = {};
+    return request(app)
+      .patch("/api/comments/9999")
+      .send(votes)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
       });
   });
 });
