@@ -1,10 +1,4 @@
-const db = require("../db/connection");
-
-exports.selectTopics = () => {
-  return db.query(`SELECT * FROM topics`).then(({ rows }) => {
-    return rows;
-  });
-};
+const db = require("../../db/connection");
 
 exports.selectArticleById = (article_id) => {
   return db
@@ -61,6 +55,17 @@ exports.selectArticles = (sort_by = "created_at", order_by = "DESC", topic) => {
   });
 };
 
+exports.updateArticle = (article_id, inc_votes) => {
+  return db
+    .query(
+      "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *",
+      [inc_votes, article_id]
+    )
+    .then(({ rows }) => {
+      return rows[0];
+    });
+};
+
 exports.selectCommentsByArticleId = (article_id) => {
   return db
     .query(
@@ -79,41 +84,6 @@ exports.insertComment = (article_id, username, body) => {
       [username, body, article_id]
     )
     .then(({ rows }) => {
-      return rows[0];
-    });
-};
-
-exports.updateArticle = (article_id, inc_votes) => {
-  return db
-    .query(
-      "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *",
-      [inc_votes, article_id]
-    )
-    .then(({ rows }) => {
-      return rows[0];
-    });
-};
-
-exports.removeCommentById = (comment_id) => {
-  return db.query("DELETE FROM comments WHERE comment_id = $1", [comment_id]);
-};
-
-exports.selectUsers = () => {
-  return db.query("SELECT * FROM users").then(({ rows }) => {
-    return rows;
-  });
-};
-
-exports.selectUserByUsername = (username) => {
-  return db
-    .query("SELECT * FROM users WHERE username = $1", [username])
-    .then(({ rows }) => {
-      if (!rows[0]) {
-        return Promise.reject({
-          status: 404,
-          msg: `User not found`,
-        });
-      }
       return rows[0];
     });
 };
