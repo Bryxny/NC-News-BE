@@ -5,6 +5,7 @@ const {
   selectCommentsByArticleId,
   insertComment,
   updateArticle,
+  insertArticle,
 } = require("../models/articles.models");
 
 exports.getArticleById = (req, res, next) => {
@@ -79,4 +80,19 @@ exports.postComment = (req, res, next) => {
       }
       next(err);
     });
+};
+
+exports.postArticle = (req, res, next) => {
+  const { author, title, body, topic, article_img_url } = req.body;
+  if (!author || !title || !body || !topic) {
+    next({ status: 400, msg: "Missing required fields" });
+  }
+  insertArticle(author, title, body, topic, article_img_url)
+    .then((article_id) => {
+      return selectArticleById(article_id);
+    })
+    .then((article) => {
+      res.status(201).send({ article });
+    })
+    .catch(next);
 };

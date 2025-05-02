@@ -87,3 +87,20 @@ exports.insertComment = (article_id, username, body) => {
       return rows[0];
     });
 };
+
+exports.insertArticle = (
+  author,
+  title,
+  body,
+  topic,
+  article_img_url = "https://placebear.com/g/200/300"
+) => {
+  return db
+    .query(
+      "INSERT INTO articles (author, title, body, topic, article_img_url) VALUES($1,$2,$3,$4,$5) RETURNING *",
+      [author, title, body, topic, article_img_url]
+    )
+    .then(({ rows }) => {
+      return rows[0].article_id;
+    });
+};

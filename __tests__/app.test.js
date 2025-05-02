@@ -395,6 +395,88 @@ describe("ARTICLES", () => {
         });
     });
   });
+  describe("POST /api/articles", () => {
+    test("201: Responds with newly added article", () => {
+      const newArticle = {
+        author: "lurker",
+        title: "article about articles",
+        body: "This is an article about how articles are articled",
+        topic: "paper",
+        article_img_url: "https://placebear.com/100/200",
+      };
+      return request(app)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.article).toMatchObject({
+            author: "lurker",
+            title: "article about articles",
+            body: "This is an article about how articles are articled",
+            topic: "paper",
+            article_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            comment_count: expect.any(Number),
+            article_img_url: "https://placebear.com/100/200",
+          });
+        });
+    });
+  });
+  test("201: Responds with newly added article, url will default if not given", () => {
+    const newArticle = {
+      author: "lurker",
+      title: "article about articles",
+      body: "This is an article about how articles are articled",
+      topic: "paper",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          author: "lurker",
+          title: "article about articles",
+          body: "This is an article about how articles are articled",
+          topic: "paper",
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          comment_count: expect.any(Number),
+          article_img_url: expect.any(String),
+        });
+      });
+  });
+  test("400: Responds with bad request if any fields are missing or invalid", () => {
+    const newArticle = {
+      title: "article about articles",
+      body: "This is an article about how articles are articled",
+      topic: "paper",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Missing required fields");
+      });
+  });
+  test("400: Responds with bad request if author or topic doesnt exist", () => {
+    const newArticle = {
+      author: "bryxny",
+      title: "article about articles",
+      body: "This is an article about how articles are articled",
+      topic: "articles",
+    };
+    return request(app)
+      .post("/api/articles")
+      .send(newArticle)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request");
+      });
+  });
 });
 
 describe("USERS", () => {
