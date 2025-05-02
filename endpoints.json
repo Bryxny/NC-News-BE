@@ -93,7 +93,7 @@
       }
     ]
   },
-  "DELETE /api/comments/comment_id": {
+  "DELETE /api/comments/:comment_id": {
     "description": "removes a comment at given id"
   },
   "GET /api/users": {
@@ -121,6 +121,14 @@
           "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
         }
       ]
+    }
+  },
+  "GET /api/users/:username": {
+    "description": "Serves a user object with given username",
+    "exampleResponse": {
+      "username": "lurker",
+      "name": "do_nothing",
+      "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
     }
   }
 }
