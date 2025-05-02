@@ -9,13 +9,14 @@ const {
 } = require("../models/articles.models");
 const { checkTopicExists } = require("../models/utils.models");
 
-exports.getArticleById = (req, res, next) => {
+exports.getArticleById = async (req, res, next) => {
   const { article_id } = req.params;
-  selectArticleById(article_id)
-    .then((article) => {
-      res.status(200).send({ article });
-    })
-    .catch(next);
+  try {
+    const article = await selectArticleById(article_id);
+    res.status(200).send({ article });
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.getArticles = async (req, res, next) => {
@@ -44,67 +45,65 @@ exports.getArticles = async (req, res, next) => {
   }
 };
 
-exports.patchArticle = (req, res, next) => {
+exports.patchArticle = async (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
   if (!inc_votes) {
     return next({ status: 400, msg: "Missing required field" });
   }
-  selectArticleById(article_id)
-    .then(() => {
-      return updateArticle(article_id, inc_votes);
-    })
-    .then((article) => {
-      res.status(201).send({ article });
-    })
-    .catch(next);
+  try {
+    await selectArticleById(article_id);
+    const article = await updateArticle(article_id, inc_votes);
+    res.status(200).send({ article });
+  } catch (err) {
+    next(err);
+  }
 };
-exports.getCommentsByArticleId = (req, res, next) => {
+exports.getCommentsByArticleId = async (req, res, next) => {
   const { article_id } = req.params;
-  selectArticleById(article_id)
-    .then(() => {
-      return selectCommentsByArticleId(article_id);
-    })
-    .then((comments) => {
-      res.status(200).send({ comments });
-    })
-    .catch(next);
+  try {
+    await selectArticleById(article_id);
+    const comments = await selectCommentsByArticleId(article_id);
+    res.status(200).send({ comments });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.postComment = (req, res, next) => {
+exports.postComment = async (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
-
   if (!username || !body) {
     return next({ status: 400, msg: "Missing required fields" });
   }
-
-  selectArticleById(article_id)
-    .then(() => {
-      return insertComment(article_id, username, body);
-    })
-    .then((comment) => {
-      res.status(201).send({ comment });
-    })
-    .catch((err) => {
-      if (err.code === "23503") {
-        next({ status: 404, msg: "User not found" });
-      }
-      next(err);
-    });
+  try {
+    await selectArticleById(article_id);
+    const comment = await insertComment(article_id, username, body);
+    res.status(201).send({ comment });
+  } catch (err) {
+    if (err.code === "23503") {
+      next({ status: 404, msg: "User not found" });
+    }
+    next(err);
+  }
 };
 
-exports.postArticle = (req, res, next) => {
+exports.postArticle = async (req, res, next) => {
   const { author, title, body, topic, article_img_url } = req.body;
   if (!author || !title || !body || !topic) {
     next({ status: 400, msg: "Missing required fields" });
   }
-  insertArticle(author, title, body, topic, article_img_url)
-    .then((article_id) => {
-      return selectArticleById(article_id);
-    })
-    .then((article) => {
-      res.status(201).send({ article });
-    })
-    .catch(next);
+  try {
+    const article_id = await insertArticle(
+      author,
+      title,
+      body,
+      topic,
+      article_img_url
+    );
+    const article = await selectArticleById(article_id);
+    res.status(201).send({ article });
+  } catch (err) {
+    next(err);
+  }
 };

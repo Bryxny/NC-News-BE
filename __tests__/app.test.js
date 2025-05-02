@@ -218,12 +218,12 @@ describe("ARTICLES", () => {
   });
 
   describe("PATCH /api/articles/:article_id", () => {
-    test("201: updates article at given ID and returns it", () => {
+    test("200: updates article at given ID and returns it", () => {
       const incVotes = { inc_votes: 1 };
       return request(app)
         .patch("/api/articles/3")
         .send(incVotes)
-        .expect(201)
+        .expect(200)
         .then(({ body }) => {
           const expectedVotes = data.articleData[2].votes + 1;
           expect(body.article).toMatchObject({
@@ -238,12 +238,12 @@ describe("ARTICLES", () => {
           });
         });
     });
-    test("201: updates article at given ID and returns it", () => {
+    test("200: updates article at given ID and returns it", () => {
       const incVotes = { inc_votes: -100 };
       return request(app)
         .patch("/api/articles/2")
         .send(incVotes)
-        .expect(201)
+        .expect(200)
         .then(({ body }) => {
           const expectedVotes = data.articleData[1].votes - 100;
           expect(body.article).toMatchObject({
