@@ -444,7 +444,6 @@ describe("USERS", () => {
         .get("/api/users/lurker")
         .expect(200)
         .then(({ body }) => {
-          console.log(body.user);
           expect(body.user).toMatchObject({
             username: "lurker",
             name: "do_nothing",
