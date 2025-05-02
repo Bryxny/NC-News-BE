@@ -11,8 +11,8 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles",
-    "queries": ["sort_by", "order", "topics"],
-    "example_request": "/api/articles?sort_by=created_at&order=ASC&topic=cats",
+    "queries": ["sort_by", "order", "topics", "limit", "p"],
+    "example_request": "/api/articles?sort_by=created_at&order=ASC&topic=cats&limit=1&p=1",
     "exampleResponse": {
       "articles": [
         {

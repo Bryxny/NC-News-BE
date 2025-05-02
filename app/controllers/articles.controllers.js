@@ -7,6 +7,7 @@ const {
   updateArticle,
   insertArticle,
 } = require("../models/articles.models");
+const { checkTopicExists } = require("../models/utils.models");
 
 exports.getArticleById = (req, res, next) => {
   const { article_id } = req.params;
@@ -17,21 +18,32 @@ exports.getArticleById = (req, res, next) => {
     .catch(next);
 };
 
-exports.getArticles = (req, res, next) => {
-  const { sort_by, order_by, topic } = req.query;
-  const validParams = ["sort_by", "order_by", "topic"];
+exports.getArticles = async (req, res, next) => {
+  const { sort_by, order_by, topic, limit, p } = req.query;
+  const validParams = ["sort_by", "order_by", "topic", "limit", "p"];
   const invalidParams = Object.keys(req.query).filter(
     (key) => !validParams.includes(key)
   );
   if (invalidParams.length > 0)
     next({ status: 400, msg: "Invalid query parameter" });
 
-  selectArticles(sort_by, order_by, topic)
-    .then((articles) => {
-      res.status(200).send({ articles });
-    })
-    .catch(next);
+  try {
+    if (topic) {
+      await checkTopicExists(topic);
+    }
+    const { total_count, articles } = await selectArticles(
+      sort_by,
+      order_by,
+      limit,
+      p,
+      topic
+    );
+    res.status(200).send({ total_count, articles });
+  } catch (err) {
+    next(err);
+  }
 };
+
 exports.patchArticle = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;

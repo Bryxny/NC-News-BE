@@ -35,24 +35,6 @@ describe("GET /api/invalidURL", () => {
   });
 });
 
-describe("GET /api/topics", () => {
-  test("200: Responds with an array of topics objects", () => {
-    return request(app)
-      .get("/api/topics")
-      .expect(200)
-      .then(({ body }) => {
-        const topics = body.topics;
-        expect(Array.isArray(topics)).toBe(true);
-        expect(topics.length).toBe(3);
-        expect(topics).toEqual(data.topicData);
-        topics.forEach((topic) => {
-          expect(topic.hasOwnProperty("slug")).toBe(true);
-          expect(topic.hasOwnProperty("description")).toBe(true);
-        });
-      });
-  });
-});
-
 describe("ARTICLES", () => {
   describe("GET /api/articles/:article_id", () => {
     test("200: Responds with article associated with requested article ID", () => {
@@ -94,7 +76,7 @@ describe("ARTICLES", () => {
   describe("GET /api/articles", () => {
     test("200: Responds with an array of article objects", () => {
       return request(app)
-        .get("/api/articles")
+        .get("/api/articles?limit=200")
         .expect(200)
         .then(({ body }) => {
           expect(body.articles.length).toEqual(data.articleData.length);
@@ -375,12 +357,20 @@ describe("ARTICLES", () => {
           });
         });
     });
-    test("404: Responds not found if there's no related articles", () => {
+    test("200: Responds with empty array if topic is valid but no related articles", () => {
       return request(app)
         .get("/api/articles?topic=paper")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).toEqual([]);
+        });
+    });
+    test("404: Responds with not found of topic doesnt exists", () => {
+      return request(app)
+        .get("/api/articles?topic=rock")
         .expect(404)
         .then(({ body }) => {
-          expect(body.msg).toBe("No articles with a topic of paper");
+          expect(body.msg).toBe("Topic not found");
         });
     });
   });
@@ -395,6 +385,7 @@ describe("ARTICLES", () => {
         });
     });
   });
+
   describe("POST /api/articles", () => {
     test("201: Responds with newly added article", () => {
       const newArticle = {
@@ -422,183 +413,271 @@ describe("ARTICLES", () => {
           });
         });
     });
-  });
-  test("201: Responds with newly added article, url will default if not given", () => {
-    const newArticle = {
-      author: "lurker",
-      title: "article about articles",
-      body: "This is an article about how articles are articled",
-      topic: "paper",
-    };
-    return request(app)
-      .post("/api/articles")
-      .send(newArticle)
-      .expect(201)
-      .then(({ body }) => {
-        expect(body.article).toMatchObject({
-          author: "lurker",
-          title: "article about articles",
-          body: "This is an article about how articles are articled",
-          topic: "paper",
-          article_id: expect.any(Number),
-          votes: expect.any(Number),
-          created_at: expect.any(String),
-          comment_count: expect.any(Number),
-          article_img_url: expect.any(String),
-        });
-      });
-  });
-  test("400: Responds with bad request if any fields are missing or invalid", () => {
-    const newArticle = {
-      title: "article about articles",
-      body: "This is an article about how articles are articled",
-      topic: "paper",
-    };
-    return request(app)
-      .post("/api/articles")
-      .send(newArticle)
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Missing required fields");
-      });
-  });
-  test("400: Responds with bad request if author or topic doesnt exist", () => {
-    const newArticle = {
-      author: "bryxny",
-      title: "article about articles",
-      body: "This is an article about how articles are articled",
-      topic: "articles",
-    };
-    return request(app)
-      .post("/api/articles")
-      .send(newArticle)
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Bad Request");
-      });
-  });
-});
-
-describe("USERS", () => {
-  describe("GET /api/users", () => {
-    test("200: Responds with an array of user objects", () => {
+    test("201: Responds with newly added article, url will default if not given", () => {
+      const newArticle = {
+        author: "lurker",
+        title: "article about articles",
+        body: "This is an article about how articles are articled",
+        topic: "paper",
+      };
       return request(app)
-        .get("/api/users")
-        .expect(200)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(201)
         .then(({ body }) => {
-          expect(body.users.length).toEqual(data.userData.length);
-          body.users.forEach((user) => {
-            expect(user).toMatchObject({
-              username: expect.any(String),
-              name: expect.any(String),
-              avatar_url: expect.any(String),
-            });
+          expect(body.article).toMatchObject({
+            author: "lurker",
+            title: "article about articles",
+            body: "This is an article about how articles are articled",
+            topic: "paper",
+            article_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            comment_count: expect.any(Number),
+            article_img_url: expect.any(String),
           });
         });
     });
-  });
-  describe("GET /api/users/:username", () => {
-    test("200: Responds with a user object of given username", () => {
+    test("400: Responds with bad request if any fields are missing or invalid", () => {
+      const newArticle = {
+        title: "article about articles",
+        body: "This is an article about how articles are articled",
+        topic: "paper",
+      };
       return request(app)
-        .get("/api/users/lurker")
-        .expect(200)
+        .post("/api/articles")
+        .send(newArticle)
+        .expect(400)
         .then(({ body }) => {
-          expect(body.user).toMatchObject({
-            username: "lurker",
-            name: "do_nothing",
-            avatar_url:
-              "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png",
-          });
+          expect(body.msg).toBe("Missing required fields");
         });
     });
-  });
-  test("404: Responds if username doesn't exist", () => {
-    return request(app)
-      .get("/api/users/bryxny")
-      .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toBe("User not found");
-      });
-  });
-});
-
-describe("COMMENTS", () => {
-  describe("DELETE /api/comments/:comment_id", () => {
-    test("204: Responds with no content at given id", () => {
+    test("400: Responds with bad request if author or topic doesnt exist", () => {
+      const newArticle = {
+        author: "bryxny",
+        title: "article about articles",
+        body: "This is an article about how articles are articled",
+        topic: "articles",
+      };
       return request(app)
-        .delete("/api/comments/3")
-        .expect(204)
-        .then((response) => {
-          expect(response.noContent).toBe(true);
-          return db.query("SELECT * FROM comments WHERE comment_id = 3");
-        })
-        .then(({ rows }) => {
-          expect(rows).toEqual([]);
-        });
-    });
-    test("400: Responds with bad request if given invalid data", () => {
-      return request(app)
-        .delete("/api/comments/notANumber")
+        .post("/api/articles")
+        .send(newArticle)
         .expect(400)
         .then(({ body }) => {
           expect(body.msg).toBe("Bad Request");
         });
     });
   });
-  describe("PATCH /api/comments/:comment_id", () => {
-    test("200: Responds with updated comment object", () => {
-      const votes = { inc_votes: 10 };
+
+  describe("GET /api/articles pagination", () => {
+    test("200: Responds with articles based on limit and page querys", () => {
       return request(app)
-        .patch("/api/comments/3")
-        .send(votes)
+        .get("/api/articles?limit=2&p=2")
         .expect(200)
         .then(({ body }) => {
-          expect(body.comment).toMatchObject({
-            comment_id: 3,
-            article_id: 1,
-            body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
-            votes: 110,
-            author: "icellusedkars",
-            created_at: "2020-03-01T01:13:00.000Z",
+          expect(body.total_count).toBe(13);
+          expect(Array.isArray(body.articles)).toBe(true);
+          expect(body.articles.length <= 2).toBe(true);
+          body.articles.forEach((article) => {
+            expect(article).toMatchObject({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(Number),
+            });
           });
         });
     });
-    test("200: Responds with updated comment object", () => {
+    test("200: Responds with articles based on limit and page querys", () => {
+      return request(app)
+        .get("/api/articles?topic=cats&limit=2&p=1")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.total_count).toBe(1);
+          expect(body.articles[0]).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: "cats",
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+    });
+    test("400: Responds with bad request if limit or page is invalid", () => {
+      return request(app)
+        .get("/api/articles?limit=NaN&p=2")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+    test("400: Responds with bad request if limit or page is invalid", () => {
+      return request(app)
+        .get("/api/articles?limit=-6")
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
+        });
+    });
+    test("200: Responds with empty array but correct_total count when page exceeds articles", () => {
+      return request(app)
+        .get("/api/articles?p=20")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles).toEqual([]);
+          expect(body.total_count).toBe(13);
+        });
+    });
+  });
+
+  describe("USERS", () => {
+    describe("GET /api/users", () => {
+      test("200: Responds with an array of user objects", () => {
+        return request(app)
+          .get("/api/users")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.users.length).toEqual(data.userData.length);
+            body.users.forEach((user) => {
+              expect(user).toMatchObject({
+                username: expect.any(String),
+                name: expect.any(String),
+                avatar_url: expect.any(String),
+              });
+            });
+          });
+      });
+    });
+    describe("GET /api/users/:username", () => {
+      test("200: Responds with a user object of given username", () => {
+        return request(app)
+          .get("/api/users/lurker")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.user).toMatchObject({
+              username: "lurker",
+              name: "do_nothing",
+              avatar_url:
+                "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png",
+            });
+          });
+      });
+    });
+    test("404: Responds if username doesn't exist", () => {
+      return request(app)
+        .get("/api/users/bryxny")
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("User not found");
+        });
+    });
+  });
+
+  describe("COMMENTS", () => {
+    describe("DELETE /api/comments/:comment_id", () => {
+      test("204: Responds with no content at given id", () => {
+        return request(app)
+          .delete("/api/comments/3")
+          .expect(204)
+          .then((response) => {
+            expect(response.noContent).toBe(true);
+            return db.query("SELECT * FROM comments WHERE comment_id = 3");
+          })
+          .then(({ rows }) => {
+            expect(rows).toEqual([]);
+          });
+      });
+      test("400: Responds with bad request if given invalid data", () => {
+        return request(app)
+          .delete("/api/comments/notANumber")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Bad Request");
+          });
+      });
+    });
+    describe("PATCH /api/comments/:comment_id", () => {
+      test("200: Responds with updated comment object", () => {
+        const votes = { inc_votes: 10 };
+        return request(app)
+          .patch("/api/comments/3")
+          .send(votes)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comment).toMatchObject({
+              comment_id: 3,
+              article_id: 1,
+              body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+              votes: 110,
+              author: "icellusedkars",
+              created_at: "2020-03-01T01:13:00.000Z",
+            });
+          });
+      });
+      test("200: Responds with updated comment object", () => {
+        const votes = { inc_votes: -110 };
+        return request(app)
+          .patch("/api/comments/3")
+          .send(votes)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comment).toMatchObject({
+              comment_id: 3,
+              article_id: 1,
+              body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+              votes: -10,
+              author: "icellusedkars",
+              created_at: "2020-03-01T01:13:00.000Z",
+            });
+          });
+      });
+    });
+    test("404: Responds with not found if comment doesnt exist", () => {
       const votes = { inc_votes: -110 };
       return request(app)
-        .patch("/api/comments/3")
+        .patch("/api/comments/9999")
         .send(votes)
-        .expect(200)
+        .expect(404)
         .then(({ body }) => {
-          expect(body.comment).toMatchObject({
-            comment_id: 3,
-            article_id: 1,
-            body: "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
-            votes: -10,
-            author: "icellusedkars",
-            created_at: "2020-03-01T01:13:00.000Z",
-          });
+          expect(body.msg).toBe("No comment with an ID of 9999");
+        });
+    });
+    test("400: Responds with bad request if given an empty object", () => {
+      const votes = {};
+      return request(app)
+        .patch("/api/comments/9999")
+        .send(votes)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad Request");
         });
     });
   });
-  test("404: Responds with not found if comment doesnt exist", () => {
-    const votes = { inc_votes: -110 };
-    return request(app)
-      .patch("/api/comments/9999")
-      .send(votes)
-      .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toBe("No comment with an ID of 9999");
+
+  describe("TOPICS", () => {
+    describe("GET /api/topics", () => {
+      test("200: Responds with an array of topics objects", () => {
+        return request(app)
+          .get("/api/topics")
+          .expect(200)
+          .then(({ body }) => {
+            const topics = body.topics;
+            expect(Array.isArray(topics)).toBe(true);
+            expect(topics.length).toBe(3);
+            expect(topics).toEqual(data.topicData);
+            topics.forEach((topic) => {
+              expect(topic.hasOwnProperty("slug")).toBe(true);
+              expect(topic.hasOwnProperty("description")).toBe(true);
+            });
+          });
       });
-  });
-  test("400: Responds with bad request if given an empty object", () => {
-    const votes = {};
-    return request(app)
-      .patch("/api/comments/9999")
-      .send(votes)
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe("Bad Request");
-      });
+    });
   });
 });
