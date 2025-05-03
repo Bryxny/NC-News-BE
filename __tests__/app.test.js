@@ -645,26 +645,86 @@ describe('COMMENTS', () => {
           });
         });
     });
+    test('404: Responds with not found if comment doesnt exist', () => {
+      const votes = { inc_votes: -110 };
+      return request(app)
+        .patch('/api/comments/9999')
+        .send(votes)
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe('No comment with an ID of 9999');
+        });
+    });
+    test('400: Responds with bad request if given an empty object', () => {
+      const votes = {};
+      return request(app)
+        .patch('/api/comments/9999')
+        .send(votes)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Missing require field');
+        });
+    });
   });
-  test('404: Responds with not found if comment doesnt exist', () => {
-    const votes = { inc_votes: -110 };
-    return request(app)
-      .patch('/api/comments/9999')
-      .send(votes)
-      .expect(404)
-      .then(({ body }) => {
-        expect(body.msg).toBe('No comment with an ID of 9999');
-      });
-  });
-  test('400: Responds with bad request if given an empty object', () => {
-    const votes = {};
-    return request(app)
-      .patch('/api/comments/9999')
-      .send(votes)
-      .expect(400)
-      .then(({ body }) => {
-        expect(body.msg).toBe('Missing require field');
-      });
+
+  describe('GET /api/articles/:article_id/comments pagination', () => {
+    test('200: Responds with comments based on article, limit and page querys', () => {
+      return request(app)
+        .get('/api/articles/1/comments?limit=2&p=2')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments.length).toBe(2);
+          body.comments.forEach((comment) => {
+            expect(comment).toMatchObject({
+              comment_id: expect.any(Number),
+              article_id: 1,
+              body: expect.any(String),
+              author: expect.any(String),
+              created_at: expect.any(String),
+            });
+          });
+        });
+    });
+    test('400: Responds with bad request if limit or page is invalid', () => {
+      return request(app)
+        .get('/api/articles/1/comments?limit=NaN&p=2')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad Request');
+        });
+    });
+    test('400: Responds with bad request if limit or page is invalid', () => {
+      return request(app)
+        .get('/api/articles/1/comments?p=-4')
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe('Bad Request');
+        });
+    });
+    test('200: Responds with empty array when page exceeds comments', () => {
+      return request(app)
+        .get('/api/articles/1/comments?p=20')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).toEqual([]);
+        });
+    });
+    test('404: Responds with not found if article doesnt exists', () => {
+      return request(app)
+        .get('/api/articles/9999/comments?p=20')
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toEqual('No articles with an ID of 9999');
+        });
+    });
+    test('200: Defaults when limit or p arent provided', () => {
+      return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments.length).toBe(10);
+        });
+    });
   });
 });
 

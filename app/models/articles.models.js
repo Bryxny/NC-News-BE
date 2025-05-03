@@ -54,22 +54,6 @@ exports.updateArticle = async (article_id, inc_votes) => {
   return rows[0];
 };
 
-exports.selectCommentsByArticleId = async (article_id) => {
-  const { rows } = await db.query(`SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC;`, [
-    article_id,
-  ]);
-  return rows;
-};
-
-exports.insertComment = async (article_id, username, body) => {
-  const { rows } = await db.query('INSERT INTO comments (author, body, article_id) VALUES ($1, $2, $3) RETURNING *', [
-    username,
-    body,
-    article_id,
-  ]);
-  return rows[0];
-};
-
 exports.insertArticle = async (author, title, body, topic, article_img_url = 'https://placebear.com/g/200/300') => {
   const { rows } = await db.query(
     'INSERT INTO articles (author, title, body, topic, article_img_url) VALUES($1,$2,$3,$4,$5) RETURNING *',

@@ -1,13 +1,7 @@
 const fs = require('fs').promises;
-const {
-  selectArticleById,
-  selectArticles,
-  selectCommentsByArticleId,
-  insertComment,
-  updateArticle,
-  insertArticle,
-} = require('../models/articles.models');
+const { selectArticleById, selectArticles, updateArticle, insertArticle } = require('../models/articles.models');
 const { checkTopicExists } = require('../models/utils.models');
+const { selectCommentsByArticleId, insertComment } = require('../models/comments.models');
 
 exports.getArticleById = async (req, res, next) => {
   const { article_id } = req.params;
@@ -50,9 +44,10 @@ exports.patchArticle = async (req, res, next) => {
 
 exports.getCommentsByArticleId = async (req, res, next) => {
   const { article_id } = req.params;
+  const { limit, p } = req.query;
   try {
     await selectArticleById(article_id);
-    const comments = await selectCommentsByArticleId(article_id);
+    const comments = await selectCommentsByArticleId(article_id, limit, p);
     res.status(200).send({ comments });
   } catch (err) {
     next(err);
