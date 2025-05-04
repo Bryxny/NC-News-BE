@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 const { selectArticleById, selectArticles, updateArticle, insertArticle } = require('../models/articles.models');
-const { checkTopicExists } = require('../models/utils.models');
+const { checkTopicExists } = require('../models/topics.models');
 const { selectCommentsByArticleId, insertComment } = require('../models/comments.models');
 
 exports.getArticleById = async (req, res, next) => {
