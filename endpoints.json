@@ -12,7 +12,7 @@
   "GET /api/articles": {
     "description": "serves an array of all articles",
     "queries": ["sort_by", "order", "topics", "limit", "p"],
-    "example_request": "/api/articles?sort_by=created_at&order=ASC&topic=cats&limit=1&p=1",
+    "exampleRequest": "/api/articles?sort_by=created_at&order=ASC&topic=cats&limit=1&p=1",
     "exampleResponse": {
       "articles": [
         {
@@ -47,7 +47,7 @@
   "GET /api/articles/:article_id/comments": {
     "description": "serves all the comments related to given article_id",
     "queries": ["limit", "p"],
-    "example_request": "/api/articles/1/comments?limit=2&p=1",
+    "exampleRequest": "/api/articles/1/comments?limit=2&p=1",
     "exampleResponse": [
       {
         "comment_id": 5,
@@ -82,7 +82,7 @@
   },
   "PATCH /api/articles/:article_id/comments": {
     "description": "patches an article with updated votes and returns it",
-    "example response": [
+    "exampleResponse": [
       {
         "article_id": 3,
         "title": "Eight pug gifs that remind me of mitch",
@@ -135,7 +135,7 @@
   },
   "PATCH /api/comments/:comment_id": {
     "description": "Updates votes of specified comment",
-    "body": { "inc_votes": 100 },
+    "exampleBody": { "inc_votes": 100 },
     "exampleResponse": {
       "comment_id": 3,
       "article_id": 1,
@@ -147,7 +147,7 @@
   },
   "POST /api/articles": {
     "description": "Inserts article into the database and adds required keys",
-    "body": {
+    "exampleBody": {
       "author": "lurker",
       "title": "article about articles",
       "body": "This is an article about how articles are articled",
@@ -165,5 +165,10 @@
       "article_img_url": "https://placebear.com/100/200",
       "comment_count": 0
     }
+  },
+  "POST /api/topics": {
+    "description": "Inserts topic into the database and adds required keys",
+    "exampleBody": { "slug": "dogs", "description": "not cats" },
+    "exampleResponse": { "slug": "dogs", "description": "not cats", "img_url": null }
   }
 }

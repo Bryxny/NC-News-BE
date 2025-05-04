@@ -537,6 +537,7 @@ describe('ARTICLES', () => {
     });
   });
 });
+
 describe('USERS', () => {
   describe('GET /api/users', () => {
     test('200: Responds with an array of user objects', () => {
@@ -745,5 +746,49 @@ describe('TOPICS', () => {
           });
         });
     });
+  });
+  describe('POST /api/topics', () => {
+    test('201: Responds with newly created topic', () => {
+      const topic = {
+        slug: 'dogs',
+        description: 'not cats',
+      };
+      return request(app)
+        .post('/api/topics')
+        .send(topic)
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.topic).toMatchObject({
+            slug: 'dogs',
+            description: 'not cats',
+            img_url: null,
+          });
+        });
+    });
+  });
+  test('400: Responds with bad request if any keys are missing', () => {
+    const topic = {
+      description: 'not cats',
+    };
+    return request(app)
+      .post('/api/topics')
+      .send(topic)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Missing required fields');
+      });
+  });
+  test('400: Responds with bad request if topic is a duplicate', () => {
+    const topic = {
+      description: 'what books are made of',
+      slug: 'paper',
+    };
+    return request(app)
+      .post('/api/topics')
+      .send(topic)
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Topic already exists');
+      });
   });
 });
