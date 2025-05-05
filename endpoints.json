@@ -170,5 +170,8 @@
     "description": "Inserts topic into the database and adds required keys",
     "exampleBody": { "slug": "dogs", "description": "not cats" },
     "exampleResponse": { "slug": "dogs", "description": "not cats", "img_url": null }
+  },
+  "DELETE /api/articles/article_id": {
+    "description": "Deletes an article at given article id"
   }
 }

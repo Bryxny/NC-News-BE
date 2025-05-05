@@ -1,5 +1,11 @@
 const fs = require('fs').promises;
-const { selectArticleById, selectArticles, updateArticle, insertArticle } = require('../models/articles.models');
+const {
+  selectArticleById,
+  selectArticles,
+  updateArticle,
+  insertArticle,
+  removeArticle,
+} = require('../models/articles.models');
 const { checkTopicExists } = require('../models/topics.models');
 const { selectCommentsByArticleId, insertComment } = require('../models/comments.models');
 
@@ -81,6 +87,16 @@ exports.postArticle = async (req, res, next) => {
     const article_id = await insertArticle(author, title, body, topic, article_img_url);
     const article = await selectArticleById(article_id);
     res.status(201).send({ article });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteArticle = async (req, res, next) => {
+  const { article_id } = req.params;
+  try {
+    await removeArticle(article_id);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }
