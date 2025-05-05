@@ -61,3 +61,8 @@ exports.insertArticle = async (author, title, body, topic, article_img_url = 'ht
   );
   return rows[0].article_id;
 };
+
+exports.removeArticle = async (article_id) => {
+  const { rows } = await db.query(`DELETE FROM articles WHERE article_id = $1 RETURNING *`, [article_id]);
+  if (!rows[0]) throw { status: 404, msg: `No articles with an ID of ${article_id}` };
+};

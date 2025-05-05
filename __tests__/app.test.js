@@ -536,6 +536,36 @@ describe('ARTICLES', () => {
         });
     });
   });
+
+  describe('DELETE /api/articles/:article_id', () => {
+    test('204: Responds with no content when article is deleted', () => {
+      return request(app)
+        .delete('/api/articles/2')
+        .expect(204)
+        .then(() => {
+          return db.query(`SELECT * FROM articles WHERE article_id = 2`);
+        })
+        .then(({ rows }) => {
+          expect(rows.length).toBe(0);
+        });
+    });
+  });
+  test('404: Responds with not found if article doesnt exist', () => {
+    return request(app)
+      .delete('/api/articles/9999')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe('No articles with an ID of 9999');
+      });
+  });
+  test('400: Responds with bad request if id is invalid', () => {
+    return request(app)
+      .delete('/api/articles/NaN')
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Bad Request');
+      });
+  });
 });
 
 describe('USERS', () => {
