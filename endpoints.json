@@ -80,7 +80,7 @@
       }
     ]
   },
-  "PATCH /api/articles/:article_id/comments": {
+  "PATCH /api/articles/:article_ids": {
     "description": "patches an article with updated votes and returns it",
     "exampleResponse": [
       {
