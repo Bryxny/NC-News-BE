@@ -8,6 +8,7 @@ const {
 } = require('../models/articles.models');
 const { checkTopicExists } = require('../models/topics.models');
 const { selectCommentsByArticleId, insertComment } = require('../models/comments.models');
+const { selectUserByUsername } = require('../models/users.models');
 
 exports.getArticleById = async (req, res, next) => {
   const { article_id } = req.params;
@@ -20,13 +21,14 @@ exports.getArticleById = async (req, res, next) => {
 };
 
 exports.getArticles = async (req, res, next) => {
-  const { sort_by, order_by, topic, limit, p } = req.query;
-  const validParams = ['sort_by', 'order_by', 'topic', 'limit', 'p'];
+  const { sort_by, order_by, topic, limit, p, author } = req.query;
+  const validParams = ['sort_by', 'order_by', 'topic', 'limit', 'p', 'author'];
   const invalidParams = Object.keys(req.query).filter((key) => !validParams.includes(key));
   if (invalidParams.length > 0) return next({ status: 400, msg: 'Invalid query parameter' });
   try {
     if (topic) await checkTopicExists(topic);
-    const { total_count, articles } = await selectArticles(sort_by, order_by, limit, p, topic);
+    if (author) await selectUserByUsername(author);
+    const { total_count, articles } = await selectArticles({ sort_by, order_by, limit, p, topic, author });
     res.status(200).send({ total_count, articles });
   } catch (err) {
     next(err);

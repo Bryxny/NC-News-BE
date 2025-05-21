@@ -822,3 +822,42 @@ describe('TOPICS', () => {
       });
   });
 });
+
+describe('GET /api/articles (author query)', () => {
+  test('200: Responds with all articles matching author query', () => {
+    return request(app)
+      .get('/api/articles?author=butter_bridge')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles.length > 0).toBe(true);
+        body.articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: 'butter_bridge',
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+  test('200: Responds with empty array if topic is valid but no related articles', () => {
+    return request(app)
+      .get('/api/articles?author=lurker')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.articles).toEqual([]);
+      });
+  });
+  test('404: Responds with not found of author doesnt exists', () => {
+    return request(app)
+      .get('/api/articles?author=bryxny')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe('User not found');
+      });
+  });
+});

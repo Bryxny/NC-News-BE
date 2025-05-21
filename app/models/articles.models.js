@@ -9,7 +9,7 @@ exports.selectArticleById = async (article_id) => {
   return rows[0];
 };
 
-exports.selectArticles = async (sort_by = 'created_at', order_by = 'DESC', limit = 10, p = 1, topic) => {
+exports.selectArticles = async ({ sort_by = 'created_at', order_by = 'DESC', limit = 10, p = 1, topic, author }) => {
   const sortGreenList = [
     'author',
     'title',
@@ -20,6 +20,7 @@ exports.selectArticles = async (sort_by = 'created_at', order_by = 'DESC', limit
     'article_img_url',
     'comment_count',
   ];
+  console.log(author);
   const orderGreenList = ['ASC', 'DESC'];
 
   if (!sortGreenList.includes(sort_by.toLowerCase())) throw { status: 400, msg: 'Invalid Column' };
@@ -29,9 +30,20 @@ exports.selectArticles = async (sort_by = 'created_at', order_by = 'DESC', limit
 
   let queryStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id`;
   const queryValues = [];
+  const conditions = [];
+
   if (topic) {
-    queryStr += ` WHERE articles.topic = $1`;
     queryValues.push(topic);
+    conditions.push(`articles.topic = $${queryValues.length}`);
+  }
+
+  if (author) {
+    queryValues.push(author);
+    conditions.push(`articles.author = $${queryValues.length}`);
+  }
+
+  if (conditions.length > 0) {
+    queryStr += ` WHERE ${conditions.join(' AND ')}`;
   }
   queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order_by}`;
 
