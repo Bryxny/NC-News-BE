@@ -20,7 +20,6 @@ exports.selectArticles = async ({ sort_by = 'created_at', order_by = 'DESC', lim
     'article_img_url',
     'comment_count',
   ];
-  console.log(author);
   const orderGreenList = ['ASC', 'DESC'];
 
   if (!sortGreenList.includes(sort_by.toLowerCase())) throw { status: 400, msg: 'Invalid Column' };
@@ -75,6 +74,7 @@ exports.insertArticle = async (author, title, body, topic, article_img_url = 'ht
 };
 
 exports.removeArticle = async (article_id) => {
+  await db.query(`DELETE FROM comments WHERE article_id = $1`, [article_id]);
   const { rows } = await db.query(`DELETE FROM articles WHERE article_id = $1 RETURNING *`, [article_id]);
   if (!rows[0]) throw { status: 404, msg: `No articles with an ID of ${article_id}` };
 };
