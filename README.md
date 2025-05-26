@@ -8,7 +8,7 @@ For this project I have built a RESTful api using node.js, PostreSQL, and Expres
 
 Run the following commands in your terminal
 
-`git clone https://github.com/Bryxny/nc-news-project.git`
+`git clone https://github.com/Bryxny/NC-News-BE`
 
 `npm install`
 
