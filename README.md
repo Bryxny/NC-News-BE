@@ -1,5 +1,4 @@
-# NC News Seeding
-
+# NC News
 For this project I have built a RESTful api using node.js, PostreSQL, and Express. The user can interact with a database of articles, comments, topics, and users via GET, POST, PATCH, and DELETE.
 
 **Live API:** https://nc-news-d9d7.onrender.com/api
